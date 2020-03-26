@@ -4,7 +4,8 @@ Projet informatique pour Mazars - Mines ParisTech
 
 Contact
 Guillaume Chartier, Mazars
-Projet
+
+
 Il est proposé aux étudiants de développer un programme capable de calculer le prix d’un produit financier (option digitale) à partir de l’estimation de la densité de probabilité du sous-jacent.
 
 CAHIER DES CHARGES :
