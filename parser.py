@@ -1,7 +1,23 @@
 import csv
+import sys
 
-with open('file.csv', newline='') as csvfile:
+
+
+try:
+    nom_fichier = sys.argv[1]
+
+except:
+    nom_fichier = None
+    print("précisez un csv à lire")
+
+nom_fichier = "Appearances.csv"
+
+
+with open(nom_fichier, newline='') as csvfile:
     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+    print(spamreader)
     for row in spamreader:
-        print(', '.join(row))
+        print(list((" , ".join(row)).split(",")))
+
+
 
