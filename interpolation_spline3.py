@@ -1,5 +1,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt
+from math import *
+
 
 
 def inti_spline(X,Y, F1=0 , Fn=0):
@@ -44,7 +46,7 @@ class Spline:
         self.X = X
         self.Y = Y
         self.M , self.h , self.C , self.Cprime = inti_spline(self.X,self.Y)
-    def func_regr(self,x):
+    def interpolated(self,x):
         n = len(self.X)
         k = 0
         while not(X[k]< x < X[k+1]):
@@ -64,17 +66,23 @@ Y = [0,0.4794,0.8415,0.9975,0.9093]
 Ybis =  [i for i in Y]
 splinned = Spline(X,Y)
 
+
 Xtest = list(np.arange(0,2,0.01))
 Ytest = []
-
+Y2 =[]
 for x in Xtest:
     if x in X:
         y = Y.pop(0)
         Ytest.append(y)
+        Y2.append(y)
     else :
-        Ytest.append(splinned.func_regr(x))
+        Ytest.append(splinned.interpolated(x))
+
+  
 
 
 plt.plot(X,Ybis,'b')
 plt.plot(Xtest,Ytest,'r')
+
+
 plt.show()
