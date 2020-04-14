@@ -4,7 +4,7 @@ from math import *
 
 
 
-def inti_spline(X,Y, F1=0 , Fn=0):
+def init_spline(X,Y, F1=0 , Fn=0):
     n = len(X)
     h=[]
     F=[]
@@ -45,7 +45,7 @@ class Spline:
     def __init__(self,X,Y):
         self.X = X
         self.Y = Y
-        self.M , self.h , self.C , self.Cprime = inti_spline(self.X,self.Y)
+        self.M , self.h , self.C , self.Cprime = init_spline(self.X,self.Y)
     def interpolated(self,x):
         n = len(self.X)
         k = 0
