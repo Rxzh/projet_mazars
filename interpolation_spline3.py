@@ -1,6 +1,6 @@
 import numpy as np 
 import matplotlib.pyplot as plt
-from math import *
+#from math import *
 
 
 
@@ -47,7 +47,7 @@ class Spline:
         self.Y = Y
         self.M , self.h , self.C , self.Cprime = init_spline(self.X,self.Y)
     def interpolated(self,x):
-        n = len(self.X)
+        #n = len(self.X)
         k = 0
         while not(X[k]< x < X[k+1]):
             k += 1
@@ -59,7 +59,7 @@ class Spline:
         return (y)
 
             
-
+#TEST DE LA FONCTION
 
 X = [0,0.5,1,1.5,2]
 Y = [0,0.4794,0.8415,0.9975,0.9093]
