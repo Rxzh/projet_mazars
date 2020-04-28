@@ -35,5 +35,5 @@ def Call(S0,T,K,r,sigma):
     
     return C 
 
-
+print(Put(650.95 , 4/365 , 580,0,0.9725))
 

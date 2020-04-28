@@ -34,7 +34,7 @@ def init_spline(X,Y, F1=0 , Fn=0):
         C[i] = (Y[i+1]-Y[i])/h[i] - h[i]/6 * (M[i+1]-M[i])
         Cprime[i] = Y[i] - M[i]*(h[i]**2)/6
     
-    print(C)
+    #print(C)
     return M,h,C,Cprime
 
 
@@ -49,7 +49,7 @@ class Spline:
     def interpolated(self,x):
         #n = len(self.X)
         k = 0
-        while not(self.X[k]< x < self.X[k+1]):
+        while not(self.X[k] <= x <= self.X[k+1]) : #inf ou egal?
             k += 1
         y = self.M[k] * (self.X[k+1]-x)**3 / (6*self.h[k]) 
         y += self.M[k+1] * (x-self.X[k])**3 / (6*self.h[k])

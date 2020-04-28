@@ -5,7 +5,8 @@ import csv
 
 file_name = None
 #while file_name == None:  
-symbol=input("sur quel symbol on travaille? : ")
+#symbol=input("sur quel symbol on travaille? : ")
+symbol ='TSLA'
 file_name = "stocks-options_extracted_" + symbol + ".csv"
 
 
@@ -14,23 +15,25 @@ file_name = "stocks-options_extracted_" + symbol + ".csv"
 def recup():
 
     with open(file_name, newline='') as csvfile:
-        IV_index, S0s_index,Ts,Ks = 0,0,0,0
-        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        IV_index, S0s_index,Ts_index,Ks_index = 0,0,0,0
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
         IVs,S0s,Ts,Ks = list(),list(),list(),list()
         for row in spamreader:
-            A = list((" , ".join(row)).split(","))
+            A = list((",".join(row)).split(","))
 
             if not(IV_index == 0) :
-
-                IVs.append(A[IV_index])
-                S0s.append(A[S0s_index])
-                Ts.append(A[Ts_index])
-                Ks.append(A[Ks_index])
+                n = len(A[IV_index])
+                sigma =float(A[IV_index][:n-1])
+                
+                IVs.append(sigma)
+                S0s.append(float(A[S0s_index]))
+                Ts.append(float(A[Ts_index]))
+                Ks.append(float(A[Ks_index]))
 
             #NE SE FAIT QU'AU HEADER ===========
             else:
                 while A[S0s_index] != 'Price':
-                    S0_index += 1
+                    S0s_index += 1
                 while A[Ks_index] != 'Strike':
                     Ks_index += 1
                 while A[Ts_index] != 'DTE':
@@ -47,14 +50,38 @@ r = 0
 Calls = list()
 
 for i in range(len(S0)):
-    Calls.append(BS.Call(S0[i],T[i]/365,K[i],r,IV[i]))
+    Calls.append(BS.Call(S0[0],T[0]/365,K[0],r,IV[i]/100))
+
+#on range les calls par ordre croissant
+for k in range(1,len(Calls)): #cette partie est simplement un tri croissant de la liste Calls
+        temp=Calls[k]
+        temp2=IV[k]
+        j=k
+        while j>0 and temp<Calls[j-1]:
+            Calls[j]=Calls[j-1]
+            IV[j]=IV[j-1] #on y applique les memes changements sur la liste IV
+            j-=1 
+        Calls[j]=temp
+        IV[j]=temp2   
 
 
-plt.plot(IV,Calls)
+plt.plot(IV,Calls,'b')
+
+
+splinned = interpolation_spline3.Spline(IV,Calls)
+
+print(IV[0])
+print(IV[len(IV)-1])
+X = [ i/1000 for i in range (79000,86001)]
+Y = list()
+for x in X:
+    Y.append( splinned.interpolated(x))   
+
+plt.plot(X,Y,'r')
 plt.show()
 #
 #Put(S0,T,K,r,sigma)
-#print(BS.Put(650.95 , 4/365 , 580,0,0.9725))
+
 
 
 
