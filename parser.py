@@ -43,27 +43,31 @@ def colonne():
 def ligne():
     with open(nom_fichier, newline='') as csvfile:
         symbol = sys.argv.pop(0)
+        print(type(symbol))
         with open(nom_fichier[:len(nom_fichier)-4] +"_extracted_"+symbol+".csv", 'w', newline='') as newfile:
 
-            spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+            spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+
             B = list()
             for row in spamreader:
-                A = list((" , ".join(row)).split(","))
-
-
+                A = list((",".join(row)).split(","))
+                
+                
                 #NE SE FAIT QU'AU HEADER ===========
+                
                 if B == []:
                     B = A
                     writer = csv.DictWriter(newfile, fieldnames=B)
                     writer.writeheader()
                 #NE SE FAIT QU'AU HEADER ===========
-
-
-                if A[0] == symbol:
+                
+                if A[0] == symbol and A[2]== "Call":
+            
                     d=dict()
                     for j in range (len(A)):
                         d[B[j]] = A[j] 
                     writer.writerow(d)
+
 
 
 

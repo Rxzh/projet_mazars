@@ -1,50 +1,60 @@
-from scipy.integrate import quad
-from math import sqrt,log,exp,pi
 import matplotlib.pyplot as plt
+import BS
+import interpolation_spline3
+import csv
 
-def Normale(x):
-    return 1/sqrt(2*pi) * exp(-x**2/2)
-
-def N(x):
-    res = quad(Normale, -50,x)[0]    
-    return res
-
-
-
-# T = DTE / 365 
-# IV est la volatility sigma (volatilité implicite)
-# K = Strike
-# S0 = Price valeur actuelle de l'action sous jacente
-# r = 0 ?????? taux interet sans risque
-
-
-def Put(S0,T,K,r,sigma):
-    d1 = 1/(sigma*sqrt(T)) *(log(S0/K)+T*(r+sigma**2/2))
-    d2 = d1 - sigma * sqrt(T)
-
-    P = -S0 * N(-d1) + K*exp(-r*T) * N(-d2)
-    return P
+file_name = None
+#while file_name == None:  
+symbol=input("sur quel symbol on travaille? : ")
+file_name = "stocks-options_extracted_" + symbol + ".csv"
 
 
 
 
-def Call(S0,T,K,r,sigma):
-    d1 = 1/(sigma*sqrt(T)) *(log(S0/K)+T*(r+sigma**2/2))
-    d2 = d1 - sigma * sqrt(T)
+def recup():
 
-    C = S0 * N(d1) - K*exp(-r*T) * N(d2)
-    
-    return C 
+    with open(file_name, newline='') as csvfile:
+        IV_index, S0s_index,Ts,Ks = 0,0,0,0
+        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        IVs,S0s,Ts,Ks = list(),list(),list(),list()
+        for row in spamreader:
+            A = list((" , ".join(row)).split(","))
 
-print(Put(650.95 , 4/365 , 580,0,0.9725))
+            if not(IV_index == 0) :
 
-X,Y = [] , []
+                IVs.append(A[IV_index])
+                S0s.append(A[S0s_index])
+                Ts.append(A[Ts_index])
+                Ks.append(A[Ks_index])
 
-for i in range (0, 1000):
-    X.append(i)
-    Y.append(Call(5.96 , 25/365 , 6,i/1000,0.8784))
+            #NE SE FAIT QU'AU HEADER ===========
+            else:
+                while A[S0s_index] != 'Price':
+                    S0_index += 1
+                while A[Ks_index] != 'Strike':
+                    Ks_index += 1
+                while A[Ts_index] != 'DTE':
+                    Ts_index += 1
+                while A[IV_index] != 'IV':
+                    IV_index += 1
+            #NE SE FAIT QU'AU HEADER ===========
+    return S0s,Ts,Ks,IVs
 
-plt.plot(X,Y)
+
+
+S0,T,K,IV = recup()
+r = 0
+Calls = list()
+
+for i in range(len(S0)):
+    Calls.append(BS.Call(S0[i],T[i]/365,K[i],r,IV[i]))
+
+
+plt.plot(IV,Calls)
 plt.show()
+#
+#Put(S0,T,K,r,sigma)
+#print(BS.Put(650.95 , 4/365 , 580,0,0.9725))
+
 
 

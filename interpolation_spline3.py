@@ -49,11 +49,11 @@ class Spline:
     def interpolated(self,x):
         #n = len(self.X)
         k = 0
-        while not(X[k]< x < X[k+1]):
+        while not(self.X[k]< x < self.X[k+1]):
             k += 1
-        y = self.M[k] * (X[k+1]-x)**3 / (6*self.h[k]) 
-        y += self.M[k+1] * (x-X[k])**3 / (6*self.h[k])
-        y += self.C[k] * (x - X[k])
+        y = self.M[k] * (self.X[k+1]-x)**3 / (6*self.h[k]) 
+        y += self.M[k+1] * (x-self.X[k])**3 / (6*self.h[k])
+        y += self.C[k] * (x - self.X[k])
         y += self.Cprime[k]
 
         return (y)
@@ -61,28 +61,28 @@ class Spline:
             
 #TEST DE LA FONCTION
 
-X = [0,0.5,1,1.5,2]
-Y = [0,0.4794,0.8415,0.9975,0.9093]
-Ybis =  [i for i in Y]
-splinned = Spline(X,Y)
+#X = [0,0.5,1,1.5,2]
+#Y = [0,0.4794,0.8415,0.9975,0.9093]
+#Ybis =  [i for i in Y]
+#splinned = Spline(X,Y)
 
 
-Xtest = list(np.arange(0,2,0.01))
-Ytest = []
-Y2 =[]
-for x in Xtest:
-    if x in X:
-        y = Y.pop(0)
-        Ytest.append(y)
-        Y2.append(y)
-    else :
-        Ytest.append(splinned.interpolated(x))
+#Xtest = list(np.arange(0,2,0.01))
+#Ytest = []
+#Y2 =[]
+#for x in Xtest:
+#    if x in X:
+#        y = Y.pop(0)
+#        Ytest.append(y)
+#        Y2.append(y)
+#    else :
+#        Ytest.append(splinned.interpolated(x))
 
   
 
 
-plt.plot(X,Ybis,'b')
-plt.plot(Xtest,Ytest,'r')
+#plt.plot(X,Ybis,'b')
+#plt.plot(Xtest,Ytest,'r')
 
 
-plt.show()
+#plt.show()
