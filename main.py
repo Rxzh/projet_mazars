@@ -6,7 +6,7 @@ import csv
 file_name = None
 #while file_name == None:  
 #symbol=input("sur quel symbol on travaille? : ")
-symbol ='TSLA'
+symbol ='AMZN'
 file_name = "stocks-options_extracted_" + symbol + ".csv"
 
 
@@ -23,7 +23,7 @@ def recup():
 
             if not(IV_index == 0) :
                 n = len(A[IV_index])
-                sigma =float(A[IV_index][:n-1])
+                sigma =float(A[IV_index][:n-1])/100  #pourcentages donc /100 
                 
                 IVs.append(sigma)
                 S0s.append(float(A[S0s_index]))
@@ -47,10 +47,11 @@ def recup():
 
 S0,T,K,IV = recup()
 r = 0
+
 Calls = list()
 
 for i in range(len(S0)):
-    Calls.append(BS.Call(S0[0],T[0]/365,K[0],r,IV[i]/100))
+    Calls.append(BS.Call(S0[i],T[i]/365,K[i],r,IV[i]))
 
 #on range les calls par ordre croissant
 for k in range(1,len(Calls)): #cette partie est simplement un tri croissant de la liste Calls
@@ -65,17 +66,26 @@ for k in range(1,len(Calls)): #cette partie est simplement un tri croissant de l
         IV[j]=temp2   
 
 
-plt.plot(IV,Calls,'b')
+plt.plot(Calls,IV,'b')
 
 
-splinned = interpolation_spline3.Spline(IV,Calls)
+splinned = interpolation_spline3.Spline(Calls,IV)
 
-print(IV[0])
-print(IV[len(IV)-1])
-X = [ i/1000 for i in range (79000,86001)]
+print(Calls)
+borne_inf=(Calls[0]*10)//1 + 1
+borne_sup=(Calls[len(Calls)-1]*10)//1 - 1
+print("===================")
+print(borne_inf)
+print(borne_sup)
+print("===================")
+
+X = [ i/10 for i in range (int(borne_inf),int(borne_sup))]
+#print(X)
 Y = list()
 for x in X:
     Y.append( splinned.interpolated(x))   
+
+
 
 plt.plot(X,Y,'r')
 plt.show()
