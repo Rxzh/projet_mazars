@@ -88,6 +88,9 @@ for x in X:
 
 
 plt.plot(X,Y,'r')
+plt.xlabel('Prix des calls')
+plt.ylabel('IV')
+plt.title(symbol)
 plt.show()
 #
 #Put(S0,T,K,r,sigma)
