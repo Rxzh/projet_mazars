@@ -61,7 +61,7 @@ def ligne():
                     writer.writeheader()
                 #NE SE FAIT QU'AU HEADER ===========
                 
-                if A[0] == symbol and A[2]== "Call":
+                if A[0] == symbol  and A[5] == str(DTE) :#and (A[2]== "Call") :
             
                     d=dict()
                     for j in range (len(A)):
@@ -70,6 +70,7 @@ def ligne():
 
 
 
+DTE = input('choisir la valeur du DTE: ')
 
 if choix == '-c':
     colonne()
