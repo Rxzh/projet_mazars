@@ -6,7 +6,7 @@ import csv
 file_name = None
 #while file_name == None:  
 #symbol=input("sur quel symbol on travaille? : ")
-symbol ='TSLA'
+symbol ='AMZN'
 file_name = "stocks-options_extracted_" + symbol + ".csv"
 
 
@@ -103,7 +103,7 @@ for x in X:
 plt.plot(X,Y,'r')
 plt.xlabel('Strike')
 plt.ylabel('IV')
-plt.title("IV(K) "+ symbol+": Smile")
+plt.title("IV(K) ") #+ symbol+": Smile")
 plt.show()
 #
 #Put(S0,T,K,r,sigma)

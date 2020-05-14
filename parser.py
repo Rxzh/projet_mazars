@@ -61,7 +61,7 @@ def ligne():
                     writer.writeheader()
                 #NE SE FAIT QU'AU HEADER ===========
                 
-                if A[0] == symbol  and A[5] == str(DTE) :#and (A[2]== "Call") :
+                if A[0] == symbol  and A[5] == str(DTE) and (A[2]== "Put") :
             
                     d=dict()
                     for j in range (len(A)):
