@@ -20,7 +20,13 @@ def derivee(X,Y): #derive la fonction Y = f(X)
     return X2,D
 
 def calcul_grecs(): #va appeler derivee et créant systématiquement des jeux de données en fct des gdeurs et en fixant les autres
+    
+    
+    
+    
+    
     return None #attention a bien regarder toutes les combinaisons
+    
 
 
 def study(L):
