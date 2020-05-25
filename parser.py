@@ -12,8 +12,11 @@ except:
     print("précisez un csv à lire")
 
 
-
+symbol = sys.argv.pop(0)
 choix = sys.argv.pop(0)
+
+
+
 
 #a ce stade sys.argv est la liste des noms des elnts à extraire du csv. (1 symbole ou des colonnes)
 indices = []
@@ -40,9 +43,9 @@ def colonne():
                     writer.writerow(d)
 
 
-def ligne():
+def ligne(symbol, choix = "both"):
     with open(nom_fichier, newline='') as csvfile:
-        symbol = sys.argv.pop(0)
+
         print(type(symbol))
         with open(nom_fichier[:len(nom_fichier)-4] +"_extracted_"+symbol+".csv", 'w', newline='') as newfile:
 
@@ -60,21 +63,32 @@ def ligne():
                     writer = csv.DictWriter(newfile, fieldnames=B)
                     writer.writeheader()
                 #NE SE FAIT QU'AU HEADER ===========
-                
-                if A[0] == symbol  and A[5] == str(DTE) and (A[2]== "Put") :
+                if choix == 'both':
+                    if A[0] == symbol  and A[5] == str(DTE) :
+        
+                        d=dict()
+                        for j in range (len(A)):
+                            d[B[j]] = A[j] 
+                        writer.writerow(d)
+                else :
+
+                    if A[0] == symbol  and A[5] == str(DTE) and (A[2] == choix) :
             
-                    d=dict()
-                    for j in range (len(A)):
-                        d[B[j]] = A[j] 
-                    writer.writerow(d)
+                        d=dict()
+                        for j in range (len(A)):
+                            d[B[j]] = A[j] 
+                        writer.writerow(d)
 
 
 
 DTE = input('choisir la valeur du DTE: ')
 
-if choix == '-c':
-    colonne()
-elif choix == '-symbol':
-    ligne()
+
+
+if choix in {"Call",'Put','Both'}:
+    ligne(symbol,choix)
 else:
-    print("Veuillez choisir -c ou -symbol selon ce que vous voulez garder")
+    print("Pas de type de produit précisé, par défaut : Both")
+    ligne(symbol)
+    
+
