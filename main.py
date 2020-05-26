@@ -12,20 +12,7 @@ file_name = "stocks-options_extracted_" + symbol + ".csv"
 
 
 
-def derivee(X,Y): #derive la fonction Y = f(X)
-    D , X2 = list() , list()
-    for i in range(len(Y)-1):
-        D.append((Y[i+1]-Y[i])/(X[i+1]-X[i]))
-        X2.append( (X[i+1]+X[i])     /2     )
-    return X2,D
 
-def calcul_grecs(): #va appeler derivee et créant systématiquement des jeux de données en fct des gdeurs et en fixant les autres
-    
-    
-    
-    
-    
-    return None #attention a bien regarder toutes les combinaisons
     
 
 

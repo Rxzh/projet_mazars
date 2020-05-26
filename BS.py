@@ -20,20 +20,87 @@ def N(x):
 # r = 0 ?????? taux interet sans risque
 
 
-def Put(S0,T,K,r,sigma):
-    d1 = 1/(sigma*sqrt(T)) *(log(S0/K)+T*(r+sigma**2/2))
-    d2 = d1 - sigma * sqrt(T)
+def d1(S0,T,K,r,sigma):
+    return 1/(sigma*sqrt(T)) *(log(S0/K)+T*(r+sigma**2/2))
 
-    P = -S0 * N(-d1) + K*exp(-r*T) * N(-d2)
+
+def d2(S0,T,K,r,sigma):
+    return d1(S0,T,K,r,sigma) - sigma * sqrt(T)
+
+
+def delta_call(S0,T,K,r,sigma):
+    return N(d1(S0,T,K,r,sigma))
+
+def delta_put(S0,T,K,r,sigma):
+    return delta_call(S0,T,K,r,sigma) - 1
+
+
+
+def gamma(S0,T,K,r,sigma):   # gamma_call = gamma_put
+    return Normale(d1(S0,T,K,r,sigma)) / (S0*sigma*sqrt(T))
+
+
+
+def theta_call(S0,T,K,r,sigma):
+    theta = - S0 * sigma * Normale(d1(S0,T,K,r,sigma)) / (2*sqrt(T)) 
+    
+    theta = theta - r * K * N(d2(S0,T,K,r,sigma)) *exp(-r*T)
+    return theta
+
+
+def theta_put(S0,T,K,r,sigma):
+    theta = - S0 * sigma * Normale(d1(S0,T,K,r,sigma)) / (2*sqrt(T)) 
+
+    theta = theta + r * K * N(-d2(S0,T,K,r,sigma)) *exp(-r*T)
+    return theta
+
+def rho_call(S0,T,K,r,sigma):
+    return K*T*N(d2(S0,T,K,r,sigma)) * exp(-r*T)
+
+def rho_put(S0,T,K,r,sigma):
+    return - K*T*N(-d2(S0,T,K,r,sigma)) * exp(-r*T)
+
+
+def vega(S0,T,K,r,sigma): # vega_call = vega_put
+    return sqrt(T) * S0 * Normale( d1(S0,T,K,r,sigma) ) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+def Put(S0,T,K,r,sigma):
+
+    P = -S0 * N(-d1(S0,T,K,r,sigma)) + K*exp(-r*T) * N(-d2(S0,T,K,r,sigma))
+
     return P
 
 def Call(S0,T,K,r,sigma):
-    d1 = 1/(sigma*sqrt(T)) *(log(S0/K)+T*(r+sigma**2/2))
-    d2 = d1 - sigma * sqrt(T)
 
-    C = S0 * N(d1) - K*exp(-r*T) * N(d2)
+    C = S0 * N(d1(S0,T,K,r,sigma)) - K*exp(-r*T) * N(d2(S0,T,K,r,sigma))
     
     return C 
+
+
+
+def derivee(X,Y): #derive la fonction Y = f(X)
+    D , X2 = list() , list()
+    for i in range(len(Y)-1):
+        D.append((Y[i+1]-Y[i])/(X[i+1]-X[i]))
+        X2.append( (X[i+1]+X[i])     /2     )
+    return X2,D
+
 
 print(Put(650.95 , 4/365 , 580,0,0.9725))
 
