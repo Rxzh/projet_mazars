@@ -63,7 +63,7 @@ def ligne(symbol, choix = "both"):
                     writer = csv.DictWriter(newfile, fieldnames=B)
                     writer.writeheader()
                 #NE SE FAIT QU'AU HEADER ===========
-                if choix == 'both':
+                if choix == 'Both':
                     if A[0] == symbol  and A[5] == str(DTE) :
         
                         d=dict()

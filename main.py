@@ -17,8 +17,10 @@ file_name = "stocks-options_extracted_" + symbol + ".csv"
 
 
 def study(L):
+    
+    for i in range(len(L)): #petit test
+        L[i] = abs(L[i])
     moy = sum(L) / len(L)
-
     M = list()
     for x in L:
         M.append((x-moy)**2)
@@ -49,6 +51,7 @@ def TRI2(L,indexes): #retire les éléments d'indice dans indexes dans L
     k = 0
     for i in indexes:
         L.pop(i-k)
+
         k += 1
     return L
 
@@ -102,20 +105,22 @@ print(Volumes)
 
 
 
-def delete_indexes(Volumes):
+def delete_indexes(Volumes,x):
     moy,et = study(Volumes)
+    print(moy)
+    print(et)
     indexes = list()
     for i in range(len(Volumes)):
-        if not (    moy-et <  Volumes[i] < moy+et    ):
+        if  not (  moy-x*et  < Volumes[i] < moy+x*et ):
             indexes.append(i)
 
     return indexes
 
 
-indexes = delete_indexes(Volumes)
+#indexes = delete_indexes(Volumes)
 
-K = TRI2(K,indexes)
-IV = TRI2(IV,indexes)
+#K = TRI2(K,indexes)
+#IV = TRI2(IV,indexes)
             
 
 
@@ -136,9 +141,39 @@ while i <= len(K)-2:
     i += 1
 
 
+
+
+
+X2,D = BS.derivee(K,IV)
+
 plt.plot(K,IV,'b')
 
 
+indexes = delete_indexes(D,1.6)
+while indexes != []:
+
+    K = TRI2(K,indexes)
+    IV = TRI2(IV,indexes)
+    D = TRI2(D,indexes)
+    indexes = delete_indexes(D,1.6)
+
+
+
+
+
+
+
+
+plt.plot(K,IV,"g")
+
+
+
+
+
+
+
+print(IV)
+print(D)
 splinned = interpolation_spline3.Spline(K,IV)
 
 #print(Calls)
