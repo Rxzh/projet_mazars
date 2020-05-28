@@ -1,6 +1,6 @@
 import csv
 import sys
-
+import BS
 
 #print(sys.argv)
 try:
@@ -59,7 +59,7 @@ def ligne(symbol, choix = "both"):
                 #NE SE FAIT QU'AU HEADER ===========
                 
                 if B == []:
-                    B = A
+                    B = A + ["Delta","Gamma","Theta","Vega"] ############################
                     writer = csv.DictWriter(newfile, fieldnames=B)
                     writer.writeheader()
                 #NE SE FAIT QU'AU HEADER ===========
@@ -69,6 +69,24 @@ def ligne(symbol, choix = "both"):
                         d=dict()
                         for j in range (len(A)):
                             d[B[j]] = A[j] 
+
+                        n = len(A[13])
+                        sigma =float(A[13][:n-1])/100
+
+                        S0,T,K,r = float(A[1]) , float(A[5])/365 , float(A[3]) , 0 
+
+
+                        if A[2] == "Call":
+                            d[B[len(A)]]   = BS.delta_call(S0,T,K,r,sigma)    #
+                            d[B[len(A)+2]] = BS.theta_call(S0,T,K,r,sigma)    #
+                        else :
+                            d[B[len(A)]]   = BS.delta_put(S0,T,K,r,sigma)    #
+                            d[B[len(A)+2]] = BS.theta_put(S0,T,K,r,sigma) 
+                        
+                        d[B[len(A)+1]] = BS.gamma(S0,T,K,r,sigma)
+                    
+                        d[B[len(A)+3]] = BS.vega(S0,T,K,r,sigma)
+
                         writer.writerow(d)
                 else :
 
@@ -77,6 +95,21 @@ def ligne(symbol, choix = "both"):
                         d=dict()
                         for j in range (len(A)):
                             d[B[j]] = A[j] 
+                        #TOUT CA POUR RAJOUTER LES GREEKS
+                        n = len(A[13])
+                        sigma =float(A[13][:n-1])/100
+                        S0,T,K,r = float(A[1]) , float(A[5])/365 , float(A[3]) , 0 
+                        if A[2] == "Call":
+                            d[B[len(A)]]   = BS.delta_call(S0,T,K,r,sigma)    #
+                            d[B[len(A)+2]] = BS.theta_call(S0,T,K,r,sigma)    #
+                        else :
+                            d[B[len(A)]]   = BS.delta_put(S0,T,K,r,sigma)    #
+                            d[B[len(A)+2]] = BS.theta_put(S0,T,K,r,sigma) 
+                        d[B[len(A)+1]] = BS.gamma(S0,T,K,r,sigma)
+                        d[B[len(A)+3]] = BS.vega(S0,T,K,r,sigma)
+
+
+
                         writer.writerow(d)
 
 
