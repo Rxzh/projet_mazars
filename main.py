@@ -10,6 +10,21 @@ file_name = None
 symbol ='AMZN'
 file_name = "stocks-options_extracted_" + symbol + ".csv"
 
+def Pearson(x,y): #Retourne le coefficient de correlation de Pearson
+    xm,sigmax = study(x)
+    ym,sigmay = study(y)
+    n = min(len(x),len(y))
+    coef = 0.0
+    for i in range(n):
+        coef +=  (x[i]-xm)*(y[i]-ym)
+    coef = coef/(n*sigmax*sigmay)
+    return coef
+
+
+
+def rearrange(x,y): 
+    n = min ( len(x),len(y))
+    return x[:n],y[:n]
 
 
 def study(L):
@@ -95,10 +110,10 @@ def delete_indexes(Volumes,x,option=True):
     indexes = list()
     for i in range(len(Volumes)):
         if option:
-            if  not (  moy-x*et  < Volumes[i] < moy+x*et ):
+            if  not (  moy-x*et  < Volumes[i] < moy+x*et ): #pour la dérivée
                 indexes.append(i)
         else: 
-            if   (  Volumes[i] < moy - x*et ):
+            if   (  Volumes[i] < moy - x*et ): #pour le volume
                 indexes.append(i)
 
     return indexes
@@ -129,6 +144,7 @@ r = 0
 
 
 K,IV = TRI(K,IV)
+
 i = 0
 while i <= len(K)-2:
     while K[i] == K[i+1]:
@@ -148,32 +164,49 @@ plt.plot(K,IV,'b')
 ############################################# Effectue la linéarisation par la dérivée.
 X2,D = BS.derivee(K,IV)
 
-indexes2 = delete_indexes(D,1.6,True)
-indexes = indexes2
+indexes_a_supprimer = delete_indexes(D,1.6,True)
+
+
+Liste_indexes = [i for i in range(len(D))]
+Global_indexes = list()
+
+for i in range (len(indexes_a_supprimer)):
+    Global_indexes.append(Liste_indexes.pop(indexes_a_supprimer[i]-i))
 
 
 
-while indexes != []:
-    n = len(indexes)
 
-    K = TRI2(K,indexes)
-    IV = TRI2(IV,indexes)
-    D = TRI2(D,indexes)
-    indexes = delete_indexes(D,1.6,True)
-    indexes3 = indexes[:]
-    for i in range(len(indexes3)):
-        indexes3[i] = indexes3[i] + min(n,)
 
-    indexes2  = indexes2 + indexes3
+while indexes_a_supprimer != []:
+
+    K = TRI2(K,indexes_a_supprimer)
+    IV = TRI2(IV,indexes_a_supprimer)
+    D = TRI2(D,indexes_a_supprimer)
+    indexes_a_supprimer = delete_indexes(D,1.6,True)
+
+    for i in range (len(indexes_a_supprimer)):
+        Global_indexes.append(Liste_indexes.pop(indexes_a_supprimer[i]-i))
+
+
+
+###############################################
+Global_indexes.sort()
+
+Global_indexes , indexes1 = rearrange(Global_indexes,indexes1)
+
 
 print(indexes1)
 print(len(indexes1))
-print(indexes2)
-print(len(indexes2))
-
-###############################################
+print(Global_indexes)
+print(len(Global_indexes))
 
 
+coef = Pearson(Global_indexes,indexes1)
+
+#plt.scatter(Global_indexes,indexes1)
+#plt.title("Coefficient de corrélation : r = " + str(coef))
+
+#plt.show()
 
 
 
