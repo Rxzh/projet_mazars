@@ -20,33 +20,11 @@ choix = sys.argv.pop(0)
 
 #a ce stade sys.argv est la liste des noms des elnts à extraire du csv. (1 symbole ou des colonnes)
 indices = []
-def colonne():
-    with open(nom_fichier, newline='') as csvfile:
-        with open(nom_fichier[:len(nom_fichier)-4] + "_extracted.csv", 'w', newline='') as newfile:
-            fieldnames = sys.argv
-            writer = csv.DictWriter(newfile, fieldnames=fieldnames)
-            writer.writeheader()
-            spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-            for row in spamreader:
-                A = list((" , ".join(row)).split(","))
-                #NE SE FAIT QU'AU HEADER ===========
-                if indices == []:
-                    B = A 
-                    for i in range (len(A)-1,-1,-1):
-                        if A[i] in sys.argv:
-                            indices =  [i] + indices
-                #NE SE FAIT QU'AU HEADER ===========
-                else:
-                    d = dict()
-                    for j in indices:
-                        d[B[j]] = A[j]
-                    writer.writerow(d)
+
 
 
 def ligne(symbol, choix = "both"):
     with open(nom_fichier, newline='') as csvfile:
-
-        print(type(symbol))
         with open(nom_fichier[:len(nom_fichier)-4] +"_extracted_"+symbol+".csv", 'w', newline='') as newfile:
 
             spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
@@ -63,6 +41,8 @@ def ligne(symbol, choix = "both"):
                     writer = csv.DictWriter(newfile, fieldnames=B)
                     writer.writeheader()
                 #NE SE FAIT QU'AU HEADER ===========
+
+
                 if choix == 'Both':
                     if A[0] == symbol  and A[5] == str(DTE) :
         
@@ -95,6 +75,12 @@ def ligne(symbol, choix = "both"):
                         d=dict()
                         for j in range (len(A)):
                             d[B[j]] = A[j] 
+
+
+
+
+
+                            
                         #TOUT CA POUR RAJOUTER LES GREEKS
                         n = len(A[13])
                         sigma =float(A[13][:n-1])/100

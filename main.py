@@ -12,10 +12,6 @@ file_name = "stocks-options_extracted_" + symbol + ".csv"
 
 
 
-
-    
-
-
 def study(L):
     
     for i in range(len(L)): #petit test
@@ -45,19 +41,13 @@ def TRI(L,M):#trie la liste L et applique les même changement à la liste M
     return L,M
     
 
-
-
-def TRI2(L,indexes): #retire les éléments d'indice dans indexes dans L
+def TRI2(L,indexes): #retire les éléments d'indices dans indexes dans L
     k = 0
     for i in indexes:
         L.pop(i-k)
 
         k += 1
     return L
-
-
-
-
 
 
 def recup():
@@ -93,6 +83,27 @@ def recup():
             #NE SE FAIT QU'AU HEADER ===========
     return S0s,Ts,Ks,IVs,Volumes
 
+def boite(distribution):
+    X = [1 for i in range(len(distribution))]
+    plt.scatter(X,distribution)
+    plt.boxplot(distribution)
+    plt.show()
+
+def delete_indexes(Volumes,x,option=True):
+    moy,et = study(Volumes)
+
+    indexes = list()
+    for i in range(len(Volumes)):
+        if option:
+            if  not (  moy-x*et  < Volumes[i] < moy+x*et ):
+                indexes.append(i)
+        else: 
+            if   (  Volumes[i] < moy - x*et ):
+                indexes.append(i)
+
+    return indexes
+
+
 
 
 
@@ -100,37 +111,22 @@ def recup():
 
 S0,T,K,IV,Volumes = recup()
 
-print(Volumes)
+###########################
+
+indexes1 = delete_indexes(Volumes,0.155,False)
+
+#K = TRI2(K,indexes1)
+#IV = TRI2(IV,indexes1)
+####################################
 
 
 
 
-def delete_indexes(Volumes,x):
-    moy,et = study(Volumes)
-    print(moy)
-    print(et)
-    indexes = list()
-    for i in range(len(Volumes)):
-        if  not (  moy-x*et  < Volumes[i] < moy+x*et ):
-            indexes.append(i)
-
-    return indexes
-
-
-#indexes = delete_indexes(Volumes)
-
-#K = TRI2(K,indexes)
-#IV = TRI2(IV,indexes)
-            
-
-
-
-
+#####################################################
 r = 0
-Calls = list()
 
-for i in range(len(K)):
-    Calls.append(BS.Call(S0[0],T[0]/365,K[i],r,IV[i]))
+
+
 
 K,IV = TRI(K,IV)
 i = 0
@@ -144,21 +140,38 @@ while i <= len(K)-2:
 
 
 
-X2,D = BS.derivee(K,IV)
 
 plt.plot(K,IV,'b')
+#plt.show()
 
 
-indexes = delete_indexes(D,1.6)
+############################################# Effectue la linéarisation par la dérivée.
+X2,D = BS.derivee(K,IV)
+
+indexes2 = delete_indexes(D,1.6,True)
+indexes = indexes2
+
+
+
 while indexes != []:
+    n = len(indexes)
 
     K = TRI2(K,indexes)
     IV = TRI2(IV,indexes)
     D = TRI2(D,indexes)
-    indexes = delete_indexes(D,1.6)
+    indexes = delete_indexes(D,1.6,True)
+    indexes3 = indexes[:]
+    for i in range(len(indexes3)):
+        indexes3[i] = indexes3[i] + min(n,)
 
+    indexes2  = indexes2 + indexes3
 
+print(indexes1)
+print(len(indexes1))
+print(indexes2)
+print(len(indexes2))
 
+###############################################
 
 
 
@@ -169,23 +182,15 @@ plt.plot(K,IV,"g")
 
 
 
-
-
-
-print(IV)
-print(D)
+# INTERPOLATION
 splinned = interpolation_spline3.Spline(K,IV)
 
-#print(Calls)
 borne_inf=(K[0]*10)//1 + 1
 borne_sup=(K[len(K)-1]*10)//1 - 1
-#print("===================")
-#print(borne_inf)
-#print(borne_sup)
-#print("===================")
+
 
 X = [ i/10 for i in range (int(borne_inf),int(borne_sup))]
-#print(X)
+
 Y = list()
 for x in X:
     Y.append( splinned.interpolated(x))   
@@ -197,9 +202,3 @@ plt.xlabel('Strike')
 plt.ylabel('IV')
 plt.title("IV(K) "+ symbol)
 plt.show()
-#
-#Put(S0,T,K,r,sigma)
-
-
-
-
