@@ -17,7 +17,7 @@ def N(x):
 # IV est la volatility sigma (volatilité implicite)
 # K = Strike
 # S0 = Price valeur actuelle de l'action sous jacente
-# r = 0 ?????? taux interet sans risque
+# r = 0.1 taux interet sans risque OIS/USD 
 
 
 def d1(S0,T,K,r,sigma):
@@ -65,31 +65,12 @@ def vega(S0,T,K,r,sigma): # vega_call = vega_put
     return sqrt(T) * S0 * Normale( d1(S0,T,K,r,sigma) ) 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
 def Put(S0,T,K,r,sigma):
-
     P = -S0 * N(-d1(S0,T,K,r,sigma)) + K*exp(-r*T) * N(-d2(S0,T,K,r,sigma))
-
     return P
 
 def Call(S0,T,K,r,sigma):
-
     C = S0 * N(d1(S0,T,K,r,sigma)) - K*exp(-r*T) * N(d2(S0,T,K,r,sigma))
-    
     return C 
 
 
@@ -102,6 +83,13 @@ def derivee(X,Y): #derive la fonction Y = f(X)
     return X2,D
 
 
-print(Put(650.95 , 4/365 , 580,0,0.9725))
+#d PrixBS / d K 
+# doit tendre vers 1 en +inf et 0 en O
+
+
+#print(Put(650.95 , 4/365 , 580,0,0.9725))
 
 print(1 + (1/10)*(Call(650.95 , 4/365 , 580+5,0,0.9725)-Call(650.95 , 4/365 , 580-5,0,0.9725)))
+
+
+print (N(d2(650.95 , 4/365 , 580+5,0,0.9725)))
