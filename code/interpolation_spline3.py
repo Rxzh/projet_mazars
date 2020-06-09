@@ -46,8 +46,13 @@ class Spline:
         self.X = X
         self.Y = Y
         self.M , self.h , self.C , self.Cprime = init_spline(self.X,self.Y)
+
     def interpolated(self,x):
-        #n = len(self.X)
+        n = len(self.X)
+        if x< self.X[0]:
+            return self.Y[0]
+        elif x>self.X[n-1]:
+            return self.Y[n-1]
         k = 0
         while not(self.X[k] <= x <= self.X[k+1]) : #inf ou egal?
             k += 1
