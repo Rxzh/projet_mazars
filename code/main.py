@@ -20,7 +20,10 @@ def Pearson(x,y): #Retourne le coefficient de correlation de Pearson
     coef = coef/(n*sigmax*sigmay)
     return coef
 
-
+def pseudo_normalize(L):
+    n = len(L)
+    new_L = [i/(n-1) for i in range(n)]
+    return new_L
 
 def rearrange(x,y): 
     n = min ( len(x),len(y))
@@ -60,13 +63,12 @@ def TRI2(L,indexes): #retire les éléments d'indices dans indexes dans L
     k = 0
     for i in indexes:
         L.pop(i-k)
-
         k += 1
     return L
 
 
-def recup():
-    with open(file_name, newline='') as csvfile:
+def recup(symbol):
+    with open("stocks-options_extracted_" + symbol + ".csv", newline='') as csvfile:
         IV_index, S0s_index,Ts_index,Ks_index, Volume_index = 0,0,0,0,0
         spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
         IVs,S0s,Ts,Ks,Volumes = list(),list(),list(),list(),list()
@@ -98,15 +100,17 @@ def recup():
             #NE SE FAIT QU'AU HEADER ===========
     return S0s,Ts,Ks,IVs,Volumes
 
+
+
 def boite(distribution):
     X = [1 for i in range(len(distribution))]
     plt.scatter(X,distribution)
     plt.boxplot(distribution)
     plt.show()
 
+
 def delete_indexes(Volumes,x,option=True):
     moy,et = study(Volumes)
-
     indexes = list()
     for i in range(len(Volumes)):
         if option:
@@ -118,13 +122,63 @@ def delete_indexes(Volumes,x,option=True):
 
     return indexes
 
+class SYMBOL:
+    def __init__(self,symbol):
+        self.symbol = symbol
+        self.S0 , self.T , self.K , self.IV , self.Volumes = recup(self.symbol)
+        self.r = 0 #OIS/USD
+
+        self.K_,self.IV_ = TRI(self.K,self.IV)
+        i = 0
+        while i <= len(self.K_)-2:
+            while self.K_[i] == self.K_[i+1]:
+                self.K_.pop(i)
+                IV.pop(i)
+            i += 1
+        indexes = delete_indexes(self.Volumes,0.155,False)
+        self.K_ = TRI2(self.K_,indexes)
+        self.IV_ = TRI2(self.IV_,indexes)
+
+        self.sigma = interpolation_spline3.Spline(self.K_,self.IV_) #Sigma est une fonction qui s'appelle par sigma.interpolated(k)
 
 
+    def plotting(self,color = 'r'):
+        borne_inf=(self.K_[0]*10)//1 + 1
+        borne_sup=(self.K_[len(self.K_)-1]*10)//1 - 1
+
+
+        plt.plot(pseudo_normalize(self.K),self.IV,color)
+        plt.plot(pseudo_normalize(self.K),self.IV_,color)
+
+
+        X = [ i/10 for i in range (int(borne_inf),int(borne_sup))]
+        Y = list()
+        for x in X:
+            Y.append( self.sigma.interpolated(x)  )
+        plt.plot(pseudo_normalize(X),Y,color)
+        plt.xlabel('Strike')
+        plt.ylabel('IV')
+        #plt.title("IV(K) "+ symbol)
+        #plt.show()
+
+
+
+
+
+ 
+
+TSLA = SYMBOL("TSLA")
+AMZN = SYMBOL("AMZN")
+AAPL = SYMBOL("AAPL")
+AMZN.plotting("r")
+TSLA.plotting("b")
+AAPL.plotting("g")
+plt.show()
 
 
     
 
-S0,T,K,IV,Volumes = recup()
+S0,T,K,IV,Volumes = recup(symbol) 
 
 ###########################
 
@@ -195,10 +249,7 @@ Global_indexes.sort()
 Global_indexes , indexes1 = rearrange(Global_indexes,indexes1)
 
 
-print(indexes1)
-print(len(indexes1))
-print(Global_indexes)
-print(len(Global_indexes))
+
 
 
 coef = Pearson(Global_indexes,indexes1)
@@ -208,30 +259,3 @@ coef = Pearson(Global_indexes,indexes1)
 
 #plt.show()
 
-
-
-plt.plot(K,IV,"g")
-
-
-
-
-# INTERPOLATION
-splinned = interpolation_spline3.Spline(K,IV)
-
-borne_inf=(K[0]*10)//1 + 1
-borne_sup=(K[len(K)-1]*10)//1 - 1
-
-
-X = [ i/10 for i in range (int(borne_inf),int(borne_sup))]
-
-Y = list()
-for x in X:
-    Y.append( splinned.interpolated(x))   
-
-
-
-plt.plot(X,Y,'r')
-plt.xlabel('Strike')
-plt.ylabel('IV')
-plt.title("IV(K) "+ symbol)
-plt.show()
