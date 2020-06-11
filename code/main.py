@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import BS
 import interpolation_spline3
 import csv
-from math import sqrt
+from math import sqrt,exp
 
 file_name = None
 #while file_name == None:  
@@ -43,7 +43,8 @@ def study(L):
     return moy,et
     
 
-def TRI(L,M):#trie la liste L et applique les même changement à la liste M
+def TRI(X,Y):#trie la liste L et applique les même changement à la liste M
+    L,M = X[:],Y[:]
     if len(L) != len(M):
         raise("Les listes doivent être de la même taille.")
     for k in range(1,len(L)): #cette partie est simplement un tri croissant de la liste Calls
@@ -81,7 +82,7 @@ def recup(symbol):
                 
                 IVs.append(sigma)
                 S0s.append(float(A[S0s_index]))
-                Ts.append(float(A[Ts_index]))
+                Ts.append(float(A[Ts_index])/365) #en annee donc /365
                 Ks.append(float(A[Ks_index]))
                 Volumes.append(float(A[Volume_index]))
 
@@ -99,6 +100,12 @@ def recup(symbol):
                     Volume_index += 1
             #NE SE FAIT QU'AU HEADER ===========
     return S0s,Ts,Ks,IVs,Volumes
+
+
+
+
+
+
 
 
 
@@ -126,7 +133,7 @@ class SYMBOL:
     def __init__(self,symbol):
         self.symbol = symbol
         self.S0 , self.T , self.K , self.IV , self.Volumes = recup(self.symbol)
-        self.r = 0 #OIS/USD
+        self.r = 0.06 #OIS/USD
 
         self.K_,self.IV_ = TRI(self.K,self.IV)
         i = 0
@@ -160,20 +167,64 @@ class SYMBOL:
         plt.ylabel('IV')
         #plt.title("IV(K) "+ symbol)
         #plt.show()
-
-
-
-
-
+    
+    def F(self,k,t,i,epsilon = 1): #fonction de répartition du sous jacent
+        self.rs = 0.5
+        i =1
+        tau = self.T[i] - t
+        yk1 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]))
+        yk2 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]) +epsilon )
+        D =(yk2 - yk1)/epsilon
+        #while D > 0.0 :
+            #print(D)
+        #    epsilon = epsilon/10
+        #    yk1 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]))
+        #    yk2 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]) +epsilon )
+        #    D =(yk2 - yk1)/epsilon
+        #epsilon = epsilon*10
+        #yk1 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]))
+        #yk2 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]) +epsilon )
+        #D =(yk2 - yk1)/epsilon
+        #print("============ ",epsilon)
+        #y = 1+exp(tau*self.rs)* 1/epsilon*(BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]) +epsilon ) - BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i])))
+        
+        return D
  
 
 TSLA = SYMBOL("TSLA")
 AMZN = SYMBOL("AMZN")
 AAPL = SYMBOL("AAPL")
-AMZN.plotting("r")
-TSLA.plotting("b")
-AAPL.plotting("g")
+
+
+
+
+
+
+
+
+X,Y = list(), list()
+print (len(TSLA.S0))
+print(len(TSLA.K))
+for i in range (len(TSLA.S0)-1):
+    X.append(TSLA.K[5]+i)
+    Y.append(BS.Call(TSLA.S0[5],TSLA.T[5],TSLA.K[5]+i,TSLA.r,TSLA.IV[5]))
+plt.plot(X,Y)
 plt.show()
+
+
+print("=======================")
+i = 5
+print( TSLA.F(TSLA.K[i],TSLA.T[i],i) )
+print(BS.Call(TSLA.S0[i],TSLA.T[i],TSLA.K[i],TSLA.r,TSLA.IV[i]))
+print(exp(-1* TSLA.r * TSLA.T[i])*BS.N(BS.d2(TSLA.S0[i],TSLA.T[i],TSLA.K[i],TSLA.r,TSLA.IV[i])))
+
+print("=======================")
+
+
+#AMZN.plotting("r")
+#TSLA.plotting("b")
+#AAPL.plotting("g")
+#plt.show()
 
 
     
