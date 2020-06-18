@@ -59,6 +59,21 @@ def TRI(X,Y):#trie la liste L et applique les même changement à la liste M
         M[j]=temp2   
     return L,M
     
+def TRI3(X,Y):#trie la liste L et applique les même changement à la liste M
+    L,M = X[:],Y[:]
+    if len(L) != len(M):
+        raise("Les listes doivent être de la même taille.")
+    for k in range(1,len(L)): #cette partie est simplement un tri croissant de la liste Calls
+        temp=L[k]
+        temp2=M[k]
+        j=k
+        while j>0 and temp<L[j-1]:
+            L[j]=L[j-1]
+            M[j]=M[j-1] #on y applique les memes changements sur la liste IV
+            j-=1 
+        L[j]=temp
+        M[j]=temp2   
+    return L,M
 
 def TRI2(L,indexes): #retire les éléments d'indices dans indexes dans L
     k = 0
@@ -134,8 +149,8 @@ class SYMBOL:
         self.symbol = symbol
         self.S0 , self.T , self.K , self.IV , self.Volumes = recup(self.symbol)
         self.r = 0.06 #OIS/USD
-
-        self.K_,self.IV_ = TRI(self.K,self.IV)
+        
+        self.K_,self.IV_ = TRI3(self.K,self.IV)
         i = 0
         while i <= len(self.K_)-2:
             while self.K_[i] == self.K_[i+1]:
@@ -154,8 +169,8 @@ class SYMBOL:
         borne_sup=(self.K_[len(self.K_)-1]*10)//1 - 1
 
 
-        plt.plot(pseudo_normalize(self.K),self.IV,color)
-        plt.plot(pseudo_normalize(self.K),self.IV_,color)
+        #plt.plot(pseudo_normalize(self.K),self.IV,color)
+        #plt.plot(pseudo_normalize(self.K),self.IV_,color)
 
 
         X = [ i/10 for i in range (int(borne_inf),int(borne_sup))]
@@ -168,24 +183,26 @@ class SYMBOL:
         #plt.title("IV(K) "+ symbol)
         #plt.show()
     
-    def F(self,k,t,i,epsilon = 1): #fonction de répartition du sous jacent
-        self.rs = 0.5
+    def F(self,k,t,i,epsilon = 10**-10): #fonction de répartition du sous jacent
+        #self.rs = 0.5
         i =1
-        tau = self.T[i] - t
-        yk1 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]))
-        yk2 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]) +epsilon )
-        D =(yk2 - yk1)/epsilon
+        #tau = self.T[i] - t
+        yk1 = BS.Call(self.S0[i],self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2))
+        yk2 = BS.Call(self.S0[i],self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 ))
+        D =1+(yk2 - yk1)/epsilon
         #while D > 0.0 :
-            #print(D)
+        #    print(D)
+        #    print(epsilon)
         #    epsilon = epsilon/10
-        #    yk1 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]))
-        #    yk2 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]) +epsilon )
-        #    D =(yk2 - yk1)/epsilon
+        #    yk1 = BS.Call(self.S0[i],self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2))
+        #    yk2 = BS.Call(self.S0[i],self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 ))
+        #    D =1+(yk2 - yk1)/epsilon
         #epsilon = epsilon*10
-        #yk1 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]))
-        #yk2 = BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]) +epsilon )
-        #D =(yk2 - yk1)/epsilon
-        #print("============ ",epsilon)
+        #print (epsilon)
+        #yk1 = BS.Call(self.S0[i],self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2))
+        #yk2 = BS.Call(self.S0[i],self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 ))
+        #D =1+(yk2 - yk1)/epsilon
+
         #y = 1+exp(tau*self.rs)* 1/epsilon*(BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]) +epsilon ) - BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i])))
         
         return D
@@ -202,22 +219,20 @@ AAPL = SYMBOL("AAPL")
 
 
 
-X,Y = list(), list()
-print (len(TSLA.S0))
-print(len(TSLA.K))
-for i in range (len(TSLA.S0)-1):
-    X.append(TSLA.K[5]+i)
-    Y.append(BS.Call(TSLA.S0[5],TSLA.T[5],TSLA.K[5]+i,TSLA.r,TSLA.IV[5]))
-plt.plot(X,Y)
-plt.show()
+
 
 
 print("=======================")
-i = 5
-print( TSLA.F(TSLA.K[i],TSLA.T[i],i) )
-print(BS.Call(TSLA.S0[i],TSLA.T[i],TSLA.K[i],TSLA.r,TSLA.IV[i]))
-print(exp(-1* TSLA.r * TSLA.T[i])*BS.N(BS.d2(TSLA.S0[i],TSLA.T[i],TSLA.K[i],TSLA.r,TSLA.IV[i])))
-
+i = 0
+#print (len(TSLA.K))
+while AMZN.K[i] < 2170:
+    i += 1
+print(i)
+i=4
+print( AMZN.F(AMZN.K[i],AMZN.T[i],i) )
+#print(BS.Call(TSLA.S0[i],TSLA.T[i],TSLA.K[i],TSLA.r,TSLA.IV[i]))
+print(exp(-1* AMZN.r * AMZN.T[i])*BS.N(BS.d2(AMZN.S0[i],AMZN.T[i],AMZN.K[i],AMZN.r,AMZN.IV[i])))
+#print(exp(-1* AMZN.r * AMZN.T[i])*BS.N(BS.d1(AMZN.S0[i],AMZN.T[i],AMZN.K[i],AMZN.r,AMZN.IV[i])))
 print("=======================")
 
 
