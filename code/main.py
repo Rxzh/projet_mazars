@@ -163,6 +163,19 @@ class SYMBOL:
 
         self.sigma = interpolation_spline3.Spline(self.K_,self.IV_) #Sigma est une fonction qui s'appelle par sigma.interpolated(k)
 
+    def plot_F(self):
+        X,Y,Y2 = list() , list() ,list()
+        for i in range(len(self.K)):
+            X.append(self.K[i])
+            Y.append(self.F(self.K[i],i))
+            Y2.append(exp(-1* self.r * self.T[i])*BS.N(BS.d2(self.S0[i],self.T[i],self.K[i],self.r,self.IV[i])))
+        plt.scatter(X,Y,)
+        plt.scatter(X,Y2,)
+        plt.title(f'P (St >K)     {self.symbol}     ( k= {round(Pearson(Y,Y2),4)} )',   )
+        plt.xlabel('Strike')
+        plt.ylabel('Proba de finir dans la monnaie')
+        plt.legend(['Par la fonction de repartition','Par N(d2)'])
+        plt.show()
 
     def plotting(self,color = 'r'):
         borne_inf=(self.K_[0]*10)//1 + 1
@@ -183,30 +196,47 @@ class SYMBOL:
         #plt.title("IV(K) "+ symbol)
         #plt.show()
     
-    def F(self,k,t,i,epsilon = 10**-10): #fonction de répartition du sous jacent
+    def F(self,k,i,s=0 ,epsilon = 10**-11): #fonction de répartition du sous jacent
         #self.rs = 0.5
-        i =1
         #tau = self.T[i] - t
-        yk1 = BS.Call(self.S0[i],self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2))
-        yk2 = BS.Call(self.S0[i],self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 ))
-        D =1+(yk2 - yk1)/epsilon
-        #while D > 0.0 :
-        #    print(D)
-        #    print(epsilon)
-        #    epsilon = epsilon/10
-        #    yk1 = BS.Call(self.S0[i],self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2))
-        #    yk2 = BS.Call(self.S0[i],self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 ))
-        #    D =1+(yk2 - yk1)/epsilon
-        #epsilon = epsilon*10
-        #print (epsilon)
-        #yk1 = BS.Call(self.S0[i],self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2))
-        #yk2 = BS.Call(self.S0[i],self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 ))
-        #D =1+(yk2 - yk1)/epsilon
-
-        #y = 1+exp(tau*self.rs)* 1/epsilon*(BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i]) +epsilon ) - BS.Call(self.S0[i],self.T[i],self.K[i],self.r,self.sigma.interpolated(self.K[i])))
+        yk1 = BS.Call(max(s,self.S0[i]),self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2))
+        yk2 = BS.Call(max(s,self.S0[i]),self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 ))
         
+        D = -  (yk2 - yk1)/epsilon
+
+        if abs(D)>1 or D<0 : #petite correction
+            D = 1
         return D
- 
+
+    def dF_dK(self,i,epsilon = 10**-10):
+        F1 = self.F(self.K[i]- epsilon/2,i)
+        F2 = self.F(self.K[i]+ epsilon/2,i)
+        
+        D = (F2 - F1 )/epsilon
+        return D
+
+    def dF_div(self,i,epsilon = 10**-10):
+        k = self.K[i]
+        yk1 = BS.Call(self.S0[i],self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2)-epsilon/2    )
+        yk2 = BS.Call(self.S0[i],self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 )-epsilon/2     )
+        F1 = -  (yk2 - yk1)/epsilon
+        yk3 = BS.Call(self.S0[i],self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2)+epsilon/2    )
+        yk4 = BS.Call(self.S0[i],self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 )+epsilon/2     )
+        F2 = -  (yk4 - yk3)/epsilon
+        D = (F2 - F1 )/epsilon
+        return D
+        
+    def dF_dT(self,i,epsilon = 10**-10):
+        k = self.K[i]
+        yk1 = BS.Call(self.S0[i],self.T[i]+epsilon/2,k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2))
+        yk2 = BS.Call(self.S0[i],self.T[i]+epsilon/2,k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 )) 
+        F1 = -  (yk2 - yk1)/epsilon
+        yk3 = BS.Call(self.S0[i],self.T[i]-epsilon/2,k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2))
+        yk4 = BS.Call(self.S0[i],self.T[i]-epsilon/2,k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 ))
+        F2 = -  (yk3 - yk4)/epsilon
+        D =   (F2 - F1)/epsilon
+        return D
+
 
 TSLA = SYMBOL("TSLA")
 AMZN = SYMBOL("AMZN")
@@ -214,24 +244,23 @@ AAPL = SYMBOL("AAPL")
 
 
 
+X,Y = list(), list()
+for i in range(len(TSLA.K)):
+    X.append(TSLA.K[i])
+    Y.append(TSLA.dF_dT(i))
 
-
-
-
-
+plt.scatter(X,Y)
+plt.show()
 
 
 
 print("=======================")
-i = 0
-#print (len(TSLA.K))
-while AMZN.K[i] < 2170:
-    i += 1
-print(i)
-i=4
-print( AMZN.F(AMZN.K[i],AMZN.T[i],i) )
+
+
+i = 5
+print( AMZN.F(AMZN.K[i],i) )
 #print(BS.Call(TSLA.S0[i],TSLA.T[i],TSLA.K[i],TSLA.r,TSLA.IV[i]))
-print(exp(-1* AMZN.r * AMZN.T[i])*BS.N(BS.d2(AMZN.S0[i],AMZN.T[i],AMZN.K[i],AMZN.r,AMZN.IV[i])))
+print(exp(-1* AMZN.r * AMZN.T[i])*BS.N(BS.d2(AMZN.S0[i],AMZN.T[i],AMZN.K[i],AMZN.r,AMZN.IV[i]))) #P (St >K) = N(d2) probabilite de finir dans la monnaie
 #print(exp(-1* AMZN.r * AMZN.T[i])*BS.N(BS.d1(AMZN.S0[i],AMZN.T[i],AMZN.K[i],AMZN.r,AMZN.IV[i])))
 print("=======================")
 
