@@ -118,12 +118,6 @@ def recup(symbol):
 
 
 
-
-
-
-
-
-
 def boite(distribution):
     X = [1 for i in range(len(distribution))]
     plt.scatter(X,distribution)
@@ -148,7 +142,7 @@ class SYMBOL:
     def __init__(self,symbol):
         self.symbol = symbol
         self.S0 , self.T , self.K , self.IV , self.Volumes = recup(self.symbol)
-        self.r = 0.06 #OIS/USD
+        self.r = 0.0006 #OIS/USD
         
         self.K_,self.IV_ = TRI3(self.K,self.IV)
         i = 0
@@ -194,7 +188,7 @@ class SYMBOL:
         plt.xlabel('Strike')
         plt.ylabel('IV')
         #plt.title("IV(K) "+ symbol)
-        #plt.show()
+        plt.show()
     
     def F(self,k,i,s=0 ,epsilon = 10**-11): #fonction de répartition du sous jacent
         #self.rs = 0.5
@@ -207,6 +201,26 @@ class SYMBOL:
         if abs(D)>1 or D<0 : #petite correction
             D = 1
         return D
+
+    def F_IV(self,s=0 ,epsilon = 10**-11): 
+        
+        
+
+        i = 0
+        while abs(self.S0[i] - self.K[i]) > 1:
+            i+=1 
+        D =  list()
+        k = self.K[i]
+        X = [self.sigma.interpolated(k)+i for i in range(0,100)]
+        
+        for x in X:
+       
+            yk1 = BS.Call(max(s,self.S0[i]),self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2)+x)
+            yk2 = BS.Call(max(s,self.S0[i]),self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2)+x)
+            D.append( - (yk2 - yk1)/epsilon )
+
+        plt.scatter(X,D)
+        plt.show()
 
     def dF_dK(self,i,epsilon = 10**-10):
         F1 = self.F(self.K[i]- epsilon/2,i)
@@ -223,6 +237,8 @@ class SYMBOL:
         yk3 = BS.Call(self.S0[i],self.T[i],k-epsilon/2,self.r,self.sigma.interpolated(k-epsilon/2)+epsilon/2    )
         yk4 = BS.Call(self.S0[i],self.T[i],k+epsilon/2,self.r,self.sigma.interpolated(k +epsilon/2 )+epsilon/2     )
         F2 = -  (yk4 - yk3)/epsilon
+
+
         D = (F2 - F1 )/epsilon
         return D
         
@@ -242,12 +258,15 @@ TSLA = SYMBOL("TSLA")
 AMZN = SYMBOL("AMZN")
 AAPL = SYMBOL("AAPL")
 
+#TSLA.F_IV()
 
+#AMZN.plotting()
+#boite(AMZN.Volumes)
 
 X,Y = list(), list()
 for i in range(len(TSLA.K)):
-    X.append(TSLA.K[i])
-    Y.append(TSLA.dF_dT(i))
+    X.append(TSLA.IV[i])
+    Y.append(TSLA.dF_div(i))
 
 plt.scatter(X,Y)
 plt.show()
