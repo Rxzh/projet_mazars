@@ -1,8 +1,5 @@
-
 from scipy.integrate import quad
 from math import sqrt,log,exp,pi
-
-
 
 def Normale(x):
     return 1/sqrt(2*pi) * exp(-x**2/2)
@@ -11,6 +8,15 @@ def N(x):
     res = quad(Normale, -50,x)[0]    
     return res
 
+def d1(S0,T,K,r,sigma):
+    return 1/(sigma*sqrt(T)) *(log(S0/K)+T*(r+sigma**2/2))
+
+def d2(S0,T,K,r,sigma):
+    return d1(S0,T,K,r,sigma) - sigma * sqrt(T)
+
+def Call(S0,T,K,r,sigma):
+    C = S0 * N(d1(S0,T,K,r,sigma)) - K*exp(-r*T) * N(d2(S0,T,K,r,sigma))
+    return C 
 
 
 # T = DTE / 365 
@@ -20,12 +26,9 @@ def N(x):
 # r = 0.1 taux interet sans risque OIS/USD 
 
 
-def d1(S0,T,K,r,sigma):
-    return 1/(sigma*sqrt(T)) *(log(S0/K)+T*(r+sigma**2/2))
 
 
-def d2(S0,T,K,r,sigma):
-    return d1(S0,T,K,r,sigma) - sigma * sqrt(T)
+
 
 
 def delta_call(S0,T,K,r,sigma):
@@ -69,9 +72,6 @@ def Put(S0,T,K,r,sigma):
     P = -S0 * N(-d1(S0,T,K,r,sigma)) + K*exp(-r*T) * N(-d2(S0,T,K,r,sigma))
     return P
 
-def Call(S0,T,K,r,sigma):
-    C = S0 * N(d1(S0,T,K,r,sigma)) - K*exp(-r*T) * N(d2(S0,T,K,r,sigma))
-    return C 
 
 
 
