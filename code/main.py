@@ -208,7 +208,7 @@ def delete_indexes(Volumes,x,option=True):
     return indexes
 
 class SYMBOL:
-    def __init__(self,symbol,version,csvname=None,dte=None,S0=None, r=0.0006):
+    def __init__(self,symbol,version='v1',csvname=None,dte=None,S0=None, r=0.0006):
         self.symbol = symbol
         if version == 'v1':
             self.S0 , self.T , self.K , self.IV , self.Volumes = recup(self.symbol)
@@ -312,7 +312,7 @@ class SYMBOL:
         #plt.title("IV(K) "+ symbol)
         plt.show()
     
-    def F(self,i,s=None,k=None,t=None,iv=None ,epsilon = 10**-11): #fonction de répartition du sous jacent
+    def F(self,i=None,s=None,k=None,t=None,iv=None ,epsilon = 10**-11): #fonction de répartition du sous jacent
         if s == None:
             s = self.S0_[i]
         if t == None:
@@ -366,12 +366,12 @@ class SYMBOL:
 
 
 #AAPL = SYMBOL("AAPL")
-AAPL = SYMBOL("AAPL",'v2',"aapl-options-4.csv",4,358.87)
-#MSFT = SYMBOL("MSFT","msft-options-3.csv",3,202.98)
+#AAPL = SYMBOL("AAPL",'v2',"aapl-options-4.csv",4,358.87)
+#MSFT = SYMBOL("MSFT",'v2',"msft-options-3.csv",3,202.98)
 #TSLA.F_IV()
 #AAPL.test_sensi_Call()
 #AAPL.test_sensibilite_F()
 #AAPL.plot_F()
 #MSFT.plotting()
 
-AAPL.plotting()
+#AAPL.plotting()
