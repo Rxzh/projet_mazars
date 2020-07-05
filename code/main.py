@@ -5,6 +5,8 @@ import csv
 from math import sqrt,exp,sin
 import numpy as np
 from mpl_toolkits import mplot3d
+from itertools import product
+
 
 file_name = None
 #while file_name == None:  
@@ -78,8 +80,27 @@ def TRI3(X,Y):#trie la liste L et applique les même changement à la liste M
         M[j]=temp2   
     return L,M
 
-def TRI2(L,indexes): #retire les éléments d'indices dans indexes dans L
+def TRI4(X,Y): #trie la liste X et applique les meme changements a toutes les listes de la liste Y
+    L,M = X[:],Y[:]
+    n = len(M)
+    for k in range(1,len(L)): #cette partie est simplement un tri croissant de la liste Calls
+        temp=L[k]
+        temp2 = [M[i][k] for i in range(n)]
+        j=k
+        while j>0 and temp<L[j-1]:
+            L[j]=L[j-1]
+            for i in range(n):
+                M[i][j]=M[i][j-1] #on y applique les memes changements sur la liste IV
+            j-=1 
+        L[j]=temp
+        for i in range(n):
+            M[i][j]=temp2[i]   
+    return L,M
+
+
+def TRI2(M,indexes): #retire les éléments d'indices dans indexes dans L
     k = 0
+    L = M[:]
     for i in indexes:
         L.pop(i-k)
         k += 1
@@ -131,19 +152,21 @@ def recup2(csvname,DTE,S0):
     with open(csvname, newline='') as csvfile:
         IV_index,Ks_index, Volume_index,Type_index = 0,0,0,0
         spamreader = csv.reader(csvfile,delimiter=';', quotechar='|')
-        IVs,S0s,Ts,Ks,Volumes = list(),list(),list(),list(),list()
+        IVs,S0s,Ts,Ks,Volumes,Types = list(),list(),list(),list(),list(),list()
         for row in spamreader:
             A = list((",".join(row)).split(","))
             if not(IV_index == 0):
                 
-                if A[Type_index] == "Call":
-                    n = len(A[IV_index])
-                    sigma =float(A[IV_index][:n-1])/100  #pourcentages donc /100 
-                    IVs.append(sigma)
-                    S0s.append(S0)
-                    Ts.append(DTE/365)
-                    Ks.append(float(A[Ks_index]))
-                    Volumes.append(float(numbarize(A[Volume_index])))
+                #if A[Type_index] == "Call":
+                
+                n = len(A[IV_index])
+                sigma =float(A[IV_index][:n-1])/100  #pourcentages donc /100 
+                IVs.append(sigma)
+                S0s.append(S0)
+                Ts.append(DTE/365)
+                Ks.append(float(A[Ks_index]))
+                Volumes.append(float(numbarize(A[Volume_index])))
+                Types.append(A[Type_index])
 
             #NE SE FAIT QU'AU HEADER ===========
             else:
@@ -156,7 +179,22 @@ def recup2(csvname,DTE,S0):
                 while A[Volume_index] != 'Volume':
                     Volume_index += 1
             #NE SE FAIT QU'AU HEADER ===========
-    return S0s,Ts,Ks,IVs,Volumes
+    return S0s,Ts,Ks,IVs,Volumes,Types
+
+
+
+def choix_call_put(Strikes,Types,Volumes,S0=349.5): #retourne une liste d'indice à supprimer en gardant entre chaque call et put le + liquide
+    L = list()
+    n_mid = len(Strikes) //2
+
+    for i in range(n_mid):
+        if Strikes[i] > S0:
+            L.append(i+n_mid)
+        else:
+            L.append(i)
+
+    return L
+
 
 
 def distrib(L):
@@ -213,24 +251,42 @@ class SYMBOL:
         if version == 'v1':
             self.S0 , self.T , self.K , self.IV , self.Volumes = recup(self.symbol)
         else:
-            self.S0 , self.T , self.K , self.IV , self.Volumes = recup2(csvname,dte,S0)
+            self.S0 , self.T , self.K , self.IV , self.Volumes , self.Type = recup2(csvname,dte,S0)
+
         self.r = r  #OIS/USD
         
-        self.K_,self.IV_ = TRI3(self.K,self.IV)
+
+        indexes_choix_opt = choix_call_put(self.K,self.Type,self.Volumes,S0 = self.S0[0])
+
+        self.K_ = TRI2(self.K,indexes_choix_opt)
+        self.IV_ = TRI2(self.IV,indexes_choix_opt)
+        self.Volumes_ = TRI2(self.Volumes,indexes_choix_opt)
+        self.T_ = TRI2(self.T,indexes_choix_opt)
+        self.S0_ = TRI2(self.S0,indexes_choix_opt)
+        
+        self.K_,L = TRI4(self.K_,[self.IV_,self.Volumes_,self.T_,self.S0_]) #tri4 apres
+        
+        self.IV_,self.Volumes_,self.T_,self.S0_ = L[0],L[1],L[2],L[3]
+    
+
+
         i = 0
         while i <= len(self.K_)-2:
             while self.K_[i] == self.K_[i+1]:
                 self.K_.pop(i)
-                self.IV.pop(i)
+                self.IV_.pop(i)
             i += 1
-        t = 0.2
-        indexes = delete_indexes(self.Volumes,t,False)
+        t = 0.31
+
+
+        ##### supression liquidite
+        indexes = delete_indexes(self.Volumes_,t,False)
         print(f"points supprimés car trop peu liquides pour {self.symbol} : ",len(indexes))
         self.K_ = TRI2(self.K_,indexes)
         self.IV_ = TRI2(self.IV_,indexes)
-        self.Volumes_ = TRI2(self.Volumes,indexes)
-        self.T_ = TRI2(self.T,indexes)
-        self.S0_ = TRI2(self.S0,indexes)
+        self.Volumes_ = TRI2(self.Volumes_,indexes)
+        self.T_ = TRI2(self.T_,indexes)
+        self.S0_ = TRI2(self.S0_,indexes)
         self.sigma = interpolation_spline3.Spline(self.K_,self.IV_) #Sigma est une fonction qui s'appelle par sigma.interpolated(k)
         
         #recherche atm:
@@ -240,6 +296,8 @@ class SYMBOL:
             if abs(self.K_[j] - self.S0_[j]) < dist:
                 dist = abs(self.K_[self.atm_index] - self.S0_[self.atm_index])
                 self.atm_index = j
+
+        
         #fin recherche
 
     def test_sensibilite_F(self):
@@ -279,27 +337,41 @@ class SYMBOL:
 
 
     def plot_F(self):
+
         X,Y,Y2 = list() , list() ,list()
         for i in range(len(self.K_)):
             X.append(self.K_[i])
             Y.append(self.F(i))
-            Y2.append(exp(-1* self.r * self.T_[i])*BS.N(BS.d2(self.S0_[i],self.T_[i],self.K_[i],self.r,self.IV_[i])))
+            Y2.append(exp(-1* self.r * self.T_[i])*BS.N(BS.d2(self.S0_[i],self.T_[i],self.K_[i],self.r,self.IV_[i]))) #N(d2)
         plt.scatter(X,Y,)
         plt.scatter(X,Y2,)
         plt.title(f'P (St >K| S0 = {self.S0_[0]})     {self.symbol}     ( k= {round(Pearson(Y,Y2),4)} )',   )
         plt.xlabel('Strike')
-        plt.ylabel('Proba de finir dans la monnaie')
+        plt.ylabel('Probabilité que le sous-jacent dépasse le strike à maturité')
         plt.legend(['Par la fonction de repartition','Par N(d2)'])
         plt.show()
 
+    def plot_F2(self):
+        plt.bar(self.S0_[0], 1, width = 0.4, color = 'red') 
+        plt.barh(0.5, 400, height = 0.0041, color = 'red') 
+        plt.title(f"P(S>K | S0 = {self.S0_[0]} )")
+        plt.xlabel('K')
+        plt.ylabel("P(S>K)")
+        X,Y = list(),list()
+        for x in range (int(min(self.K_) )    , int(max(self.K_))            ):
+            X.append(x)
+            Y.append(self.F(s=self.S0_[0],k=x,t=self.T_[0])  )
+        plt.plot(X,Y)
+        plt.show()
+
     def plotting(self,color = 'r'):
-        
+        plt.title(f"Sous-jacent : {self.symbol}")
         borne_inf=(self.K_[0]*10)//1 + 1
         borne_sup=(self.K_[len(self.K_)-1]*10)//1 - 1
 
         #plt.plot(pseudo_normalize(self.K),self.IV,color)
         #plt.plot(pseudo_normalize(self.K),self.IV_,color)
-        plt.plot(self.K,self.IV)
+        plt.scatter(self.K,self.IV)
         plt.plot(self.K_,self.IV_)
         X = [ i/10 for i in range (int(borne_inf),int(borne_sup))]
         Y = list()
@@ -320,17 +392,22 @@ class SYMBOL:
         if k == None:
             k = self.K_[i]
         if iv == None:
-            iv1 = self.sigma.interpolated(k-epsilon/2)
-            iv2 = self.sigma.interpolated(k+epsilon/2)
+            iv1 = self.sigma.interpolated(k)
+            iv2 = self.sigma.interpolated(k+epsilon)
         else:
             iv1,iv2 = iv,iv
-        yk1 = BS.Call(s,t,k-epsilon/2,self.r,iv1)
-        yk2 = BS.Call(s,t,k+epsilon/2,self.r,iv2)
-        
+
+        yk1 = BS.Call(s,t,k,self.r,iv1)
+        yk2 = BS.Call(s,t,k+epsilon,self.r,iv2)
         D = -  (yk2 - yk1)/epsilon
 
-        if abs(D)>1 or D<0 : #petite correction
-            D = 1
+    
+
+        
+
+
+        #if abs(D)>1 or D<0 : #petite correction
+        #    D = 1
         return D
 
 
@@ -341,7 +418,8 @@ class SYMBOL:
     def F_IV(self,s=0 ,epsilon = 10**-11): 
         i = 0
         while abs(self.S0_[i] - self.K_[i]) > 1:
-            print(i)
+            
+
             i+=1 
         D =  list()
         k = self.K[i]
@@ -371,7 +449,8 @@ class SYMBOL:
 #TSLA.F_IV()
 #AAPL.test_sensi_Call()
 #AAPL.test_sensibilite_F()
+#AAPL.plotting()
 #AAPL.plot_F()
 #MSFT.plotting()
+#MSFT.plot_F2()
 
-#AAPL.plotting()

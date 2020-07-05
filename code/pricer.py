@@ -17,7 +17,7 @@ try:
     Pricer = SYMBOL(symbol,'v2',nom_fichier,DTE,S0)
     proba=round(Pricer.F(s=S0,k=K,t=DTE/365),4)
 
-    print(f'La probabilité de finir dans la monnaie à maturité est : {proba}')
+    print(f'La probabilité que le sous-jacent dépasse le strike à maturité est : {proba}')
 
 except:
     print("Entrez les paramètres suivants: 'SYMBOL' 'fichier.csv' ")
