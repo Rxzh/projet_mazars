@@ -1,5 +1,6 @@
 import numpy as np 
 import matplotlib.pyplot as plt
+from scipy.integrate import quad
 #from math import *
 
 
@@ -63,31 +64,49 @@ class Spline:
 
         return (y)
 
-            
+
+
+
+
+
+
 #TEST DE LA FONCTION
 
 #X = [0,0.5,1,1.5,2]
 #Y = [0,0.4794,0.8415,0.9975,0.9093]
-#Ybis =  [i for i in Y]
+
+
+#X = list(np.arange(0,8.05,0.5))
+#Y = list(np.sin(X))
+
 #splinned = Spline(X,Y)
 
 
-#Xtest = list(np.arange(0,2,0.01))
-#Ytest = []
-#Y2 =[]
+#Xtest = list(np.arange(0,8,0.01))
+#Ytest = list()
+
+#xmin = 0.0
+#xmax = 2*np.pi
+#def function(x): 
+#    return np.abs(splinned.interpolated(x) - np.sin(x))
+#res, err = quad(function, xmin, xmax)
+
+#print("Erreur: ", res)     
+
+
+
+
+
 #for x in Xtest:
 #    if x in X:
 #        y = Y.pop(0)
 #        Ytest.append(y)
-#        Y2.append(y)
 #    else :
 #        Ytest.append(splinned.interpolated(x))
+#Y = list(np.sin(X))
+#plt.plot(X,Y,'b')
 
-  
-
-
-#plt.plot(X,Ybis,'b')
 #plt.plot(Xtest,Ytest,'r')
 
 
-#plt.show()
+##plt.show()
